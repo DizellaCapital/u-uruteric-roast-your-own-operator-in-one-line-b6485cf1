@@ -21,16 +21,20 @@ def main():
     if not 1 <= len(line) <= 140:
         raise SystemExit("roast line must be 1-140 characters")
     out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
+    target = os.path.join(out_dir, "entry.txt")
     try:
         os.makedirs(out_dir, exist_ok=True)
-        with open(os.path.join(out_dir, "entry.txt"), "wb") as f:
+        with open(target, "wb") as f:
             f.write(data)
-        return
     except OSError:
-        pass
-    fallback = os.path.join(os.path.dirname(os.path.abspath(__file__)), "entry.txt")
-    with open(fallback, "wb") as f:
-        f.write(data)
+        target = os.path.join(os.path.dirname(os.path.abspath(__file__)), "entry.txt")
+        with open(target, "wb") as f:
+            f.write(data)
+    # Read back and verify the write: the gate reads this exact file.
+    with open(target, "rb") as f:
+        written = f.read()
+    if written != data:
+        raise SystemExit("entry.txt verification failed")
 
 
 if __name__ == "__main__":
